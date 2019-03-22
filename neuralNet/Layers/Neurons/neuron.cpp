@@ -5,16 +5,14 @@ Neuron::Neuron(int previousNeuronCount){
 	{
 		this->weights.push_back(float(rand()%100)/100 - 0.5);
 	}
-	this->bias = float(rand()%100)/100;
 	this->value = 0;
 }
 
-Neuron::Neuron(int previousNeuronCount, std::vector<float> defaultWeight, float defaultBias){
+Neuron::Neuron(int previousNeuronCount, std::vector<float> defaultWeight){
 	for (int i = 0; i < previousNeuronCount; ++i)
 	{
 		this->weights.push_back(defaultWeight[i]);
 	}
-	this->bias = defaultBias;
 	this->value = 0;
 }
 
@@ -31,7 +29,6 @@ void Neuron::Activate(std::vector<float>& inputValues){
 	{
 		this->value = this->value + inputValues[i] * this->weights[i];
 	}
-	this->value += this->bias;
 	this->preSigValue = this->value;
 	this->value = FastSigmoid(this->value);
 }

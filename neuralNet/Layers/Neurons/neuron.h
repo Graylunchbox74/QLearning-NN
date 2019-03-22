@@ -7,13 +7,11 @@ public:
 	std::vector<float> weights;
 	float delta;
 	float preSigValue;
-	float bias;
 	float value;
 
 	//initialize neuron with random values for weights and bias
 	Neuron(int previousNeuronCount);
-	Neuron(int previousNeuronCount, std::vector<float> defaultWeight, float defaultBias);
-
+	Neuron(int previousNeuronCount, std::vector<float> defaultWeight);
 
 	//run the algorithm to obtain this neurons value
 	void Activate(std::vector<float>& inputValues);

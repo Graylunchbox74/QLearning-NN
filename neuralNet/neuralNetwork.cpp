@@ -35,35 +35,9 @@ void NeuralNetwork::ResetValues(){
 	}
 }
 
-void NeuralNetwork::TrainNetworkSingleInstance(std::vector<float> input, std::vector<float>& expectedOutput){
-	Activate(input);
-	this->cost = 0;
-	for (int i = 0; i < this->layers[this->layers.size()-1].neurons.size(); ++i)
-	{
-		this->cost += (this->layers[this->layers.size()-1].neurons[i].value - expectedOutput[i])*(this->layers[this->layers.size()-1].neurons[i].value - expectedOutput[i]);
-	}
-	//this->cost /= expectedOutput.size();
-	BackPropagateDelta(expectedOutput);
-	auto weightChanges = BackPropagateWeight();
-	auto biasChanges = BackPropagateBias();
-	for (int i = 1; i < layers.size(); ++i)
-	{
-		for (int x = 0; x < layers[i].neurons.size(); ++x)
-		{
-			for (int y = 0; y < layers[i].neurons[x].weights.size(); ++y)
-			{
-				layers[i].neurons[x].weights[y] += weightChanges[i][x][y];
-			}
-			layers[i].neurons[x].bias += biasChanges[i][x];
-		}
-	}
-}
-
-void NeuralNetwork::TrainNetworkMultipleInstance(std::vector<std::vector<float>>& input, std::vector<std::vector<float>>& expectedOutput){
+void NeuralNetwork::TrainNetwork(std::vector<std::vector<float>>& input, std::vector<std::vector<float>>& expectedOutput){
 	std::vector<std::vector<std::vector<float>>> changeWeights;
 	std::vector<std::vector<std::vector<float>>> tmpWeights;
-	std::vector<std::vector<float>> changeBias;
-	std::vector<std::vector<float>> tmpBias;
 	this->cost = 0;
 
 	for (int i = 0; i < input.size(); ++i)
@@ -78,12 +52,10 @@ void NeuralNetwork::TrainNetworkMultipleInstance(std::vector<std::vector<float>>
 		if (i == 0)
 		{
 			changeWeights = BackPropagateWeight();
-			changeBias = BackPropagateBias();
 		}
 		else
 		{
 			tmpWeights = BackPropagateWeight();
-			tmpBias = BackPropagateBias();
 			for (int x = 1; x < changeWeights.size(); ++x)
 			{
 				for (int y = 0; y < changeWeights[x].size(); ++y)
@@ -92,7 +64,6 @@ void NeuralNetwork::TrainNetworkMultipleInstance(std::vector<std::vector<float>>
 					{
 						changeWeights[x][y][z] += tmpWeights[x][y][z];
 					}
-					changeBias[x][y] += tmpBias[x][y];
 				}
 			}
 		}
@@ -105,7 +76,6 @@ void NeuralNetwork::TrainNetworkMultipleInstance(std::vector<std::vector<float>>
 			{
 				layers[x].neurons[y].weights[z] += changeWeights[x][y][z] / expectedOutput.size();
 			}
-			layers[x].neurons[y].bias += changeBias[x][y] / expectedOutput.size();
 		}
 	}
 	this->cost /= input.size();
@@ -121,7 +91,7 @@ inline void NeuralNetwork::BackPropagateDelta(std::vector<float>& expectedOutput
 	//change the weights
 	for (int i = layers.size()-1; i > 0; --i)
 	{
-		for (int x = 0; x < layers[i].neurons.size(); ++x)
+		for (int x = 1; x < layers[i].neurons.size(); ++x)
 		{
 			if (i != layers.size()-1)
 			{
@@ -160,7 +130,7 @@ std::vector<std::vector<std::vector<float>>> NeuralNetwork::BackPropagateWeight(
 	}
 	for (int i = layers.size()-1; i > 0; --i)
 	{
-		for (int x = 0; x < layers[i].neurons.size(); ++x)
+		for (int x = 1; x < layers[i].neurons.size(); ++x)
 		{
 			for (int y = 0; y < layers[i].neurons[x].weights.size(); ++y)
 			{
@@ -170,27 +140,4 @@ std::vector<std::vector<std::vector<float>>> NeuralNetwork::BackPropagateWeight(
 		}
 	}
 	return changeWeights;
-}
-std::vector<std::vector<float>> NeuralNetwork::BackPropagateBias(){
-	std::vector<std::vector<float>> changeBias(this->layers.size());
-	for (int i = 0; i < this->layers.size(); ++i)
-	{
-		if (i == 0)
-		{
-			changeBias[i] = (std::vector<float>(1));
-		}
-		else
-		{
-			changeBias[i] = ((std::vector<float>(layers[i].neurons.size())));
-		}
-	}
-	for (int i = layers.size()-1; i > 0; --i)
-	{
-		for (int x = 0; x < layers[i].neurons.size(); ++x)
-		{
-			changeBias[i][x] = -1*learningRate*(layers[i].neurons[x].delta * FastSigmoidDerivative(layers[i].neurons[x].preSigValue));
-//			layers[i].neurons[x].bias += -1*learningRate*(layers[i].neurons[x].delta * FastSigmoidDerivative(layers[i].neurons[x].preSigValue));
-		}
-	}
-	return changeBias;
 }

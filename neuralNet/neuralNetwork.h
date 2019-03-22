@@ -19,8 +19,7 @@ public:
 	void Activate(std::vector<float> input);
 
 	//training
-	void TrainNetworkMultipleInstance(std::vector<std::vector<float>>& input, std::vector<std::vector<float>>& expectedOutput);
-	void TrainNetworkSingleInstance(std::vector<float> input, std::vector<float>& expectedOutput);
+	void TrainNetwork(std::vector<std::vector<float>>& input, std::vector<std::vector<float>>& expectedOutput);
 
 	//safekeeping
 	void SaveNetwork(std::string fileName);
@@ -29,7 +28,5 @@ private:
 	float FastSigmoidDerivative(float x);
 	void BackPropagateDelta(std::vector<float>& expectedOutput);
 	std::vector<std::vector<std::vector<float>>> BackPropagateWeight();
-	std::vector<std::vector<float>> BackPropagateBias();
-
 	void ResetValues();
 };

@@ -1,16 +1,9 @@
 #include "layer.h"
 
-static void ActivateNeurons(int startId, int numToDo, std::vector<float>& previousLayer, std::vector<Neuron>& neurons){
-	for (int i = startId; i < startId+numToDo; ++i)
-	{
-		neurons[i].Activate(previousLayer);
-	}
-}
-
 Layer::Layer(int numberOfNeurons, int numberOfInputNodes){
-	for (int i = 0; i < numberOfNeurons; ++i)
+	for (int i = 0; i < numberOfNeurons + 1; ++i)
 	{
-		Neuron newNeuron(numberOfInputNodes);
+		Neuron newNeuron(numberOfInputNodes + 1);
 		neurons.push_back(newNeuron);
 	}
 }
@@ -22,10 +15,10 @@ Layer::Layer(int numberOfInputNeurons){
 		weights.push_back(0.f);
 	}
 
-	for (int i = 0; i < numberOfInputNeurons; ++i)
+	for (int i = 0; i < numberOfInputNeurons + 1; ++i)
 	{
 		weights[i] = 1.f;
-		Neuron newNeuron(numberOfInputNeurons,weights,0.f);
+		Neuron newNeuron(numberOfInputNeurons + 1,weights);
 		neurons.push_back(newNeuron);
 		weights[i] = 0.f;
 	}
@@ -33,23 +26,16 @@ Layer::Layer(int numberOfInputNeurons){
 
 
 void Layer::ActivateLayer(std::vector<float>& previousLayer){
-	std::vector<std::thread> threads;
-	int numToDo = this->neurons.size() / NUM_THREADS;
-	for (int i = 0; i < NUM_THREADS; ++i)
+	for (int i = 0; i < this->neurons.size(); ++i)
 	{
-		if (i == NUM_THREADS-1)
+		if (i == 0)
 		{
-			int leftovers = numToDo + (this->neurons.size() % NUM_THREADS);
-			threads.push_back(std::thread(ActivateNeurons,numToDo*i,leftovers, std::ref(previousLayer), std::ref(this->neurons)));
+			this->neurons[i].value = 1.f;
+			this->neurons[i].preSigValue = 1.f;
 		}
-		else
-		{
-			threads.push_back(std::thread(ActivateNeurons,numToDo*i,numToDo, std::ref(previousLayer), std::ref(this->neurons)));
+		else{
+			this->neurons[i].Activate(previousLayer);
 		}
-	}
-	for (int i = 0; i < NUM_THREADS; ++i)
-	{
-		threads[i].join();
 	}
 }
 
